@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chatbot Hóa Học Cá Nhân</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; }
+        #chat-box { height: 300px; border: 1px solid #ccc; padding: 10px; overflow-y: auto; margin-bottom: 10px; }
+        input { width: 75%; padding: 10px; }
+        button { padding: 10px 15px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>Chatbot Hóa Học (Qua Proxy)</h2>
+    <div id="chat-box"></div>
+    <form id="chat-form">
+        <input type="text" id="message" placeholder="Nhập câu hỏi hóa học..." required>
+        <button type="submit">Gửi</button>
+    </form>
+
+    <script>
+        const chatForm = document.getElementById('chat-form');
+        const chatBox = document.getElementById('chat-box');
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = document.getElementById('message').value;
+            
+            // Hiển thị câu hỏi
+            chatBox.innerHTML += `<p><strong>Bạn:</strong> ${message}</p>`;
+            document.getElementById('message').value = '';
+
+            try {
+                // Đổi URL này thành URL Vercel của bạn sau khi deploy
+                // Nếu chạy local bằng Vercel CLI, dùng '/api/chat'
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+                
+                if (data.messages) {
+                    // Dọn dẹp thẻ markdown thừa nếu có
+                    const cleanHtml = data.messages.replace(/```html|```/g, '');
+                    chatBox.innerHTML += `<p><strong>AI:</strong> ${cleanHtml}</p>`;
+                } else {
+                    chatBox.innerHTML += `<p style="color:red;">Lỗi: ${data.error}</p>`;
+                }
+            } catch (err) {
+                chatBox.innerHTML += `<p style="color:red;">Lỗi kết nối đến Proxy.</p>`;
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+    </script>
+</body>
+</html>
